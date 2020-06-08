@@ -5,6 +5,9 @@ on:
     branches:
       - develop
       - master
+  push:
+    branches:
+      - develop
 jobs:
   build:
     runs-on: ubuntu-18.04
@@ -17,3 +20,12 @@ jobs:
       - run: npm test -- --coverage
         env:
           CI: true
+      - name: Build Project
+        if: github.event_name == 'push'
+        run: npm run build
+      - name: Deploy to Staging
+        if: github.event_name == 'push' && github.ref =='refs/heads/develop'
+        run: npx surge --project ./build --domain reactapp-lima.surge.sh
+        env:
+          SURGE_LOGIN: ${{secrets.LOGIN_SURGE}}
+          SURGE_TOKEN: ${{secrets.TOKEN_SURGE}}
